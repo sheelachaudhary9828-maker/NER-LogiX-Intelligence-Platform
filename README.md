@@ -1,6 +1,10 @@
 # NER-LogiX: North Eastern Regional Logistics & Accessibility Intelligence Platform
 **AI-Powered Smart Logistics, GIS Accessibility Monitoring, and Disruption Resilience Engine for North Eastern India**
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-ner--logix--intelligence--platform.onrender.com-brightgreen?style=for-the-badge&logo=render)](https://ner-logix-intelligence-platform.onrender.com/)
+
+> 🌐 **Live Website URL**: **[https://ner-logix-intelligence-platform.onrender.com/](https://ner-logix-intelligence-platform.onrender.com/)**
+
 [![Status: Production Ready](https://img.shields.io/badge/Status-Production%20Ready-emerald.svg)](#)
 [![Region: NER 8 States](https://img.shields.io/badge/Coverage-Assam%20%7C%20Arunachal%20%7C%20Meghalaya%20%7C%20Manipur%20%7C%20Mizoram%20%7C%20Nagaland%20%7C%20Tripura%20%7C%20Sikkim-blue.svg)](#)
 [![Zero Dependency Backend](https://img.shields.io/badge/Python-3.11%20Zero--Dependency-yellow.svg)](#)
