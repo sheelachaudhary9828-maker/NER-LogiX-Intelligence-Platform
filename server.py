@@ -21,7 +21,7 @@ from data.db import get_connection, init_db, seed_data_if_empty
 from ml_engine.predictor import predictor
 from routing.route_engine import route_engine
 
-PORT = 8080
+PORT = int(os.environ.get('PORT', 8080))
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
 
 class NERLogisticsHandler(http.server.BaseHTTPRequestHandler):

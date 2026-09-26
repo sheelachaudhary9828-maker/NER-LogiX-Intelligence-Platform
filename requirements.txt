@@ -1,0 +1,2 @@
+# NER-LogiX Zero-Dependency Python 3 Server
+# Built entirely using Python standard libraries (http.server, sqlite3, json, urllib)
