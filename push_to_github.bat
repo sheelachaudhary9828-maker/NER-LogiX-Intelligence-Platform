@@ -3,26 +3,24 @@ title Push NER-LogiX to GitHub
 cd /d "%~dp0"
 
 echo ============================================================
-echo   Publish NER-LogiX to your GitHub Repository
+echo   Publishing NER-LogiX to GitHub Repository
+echo   Target: https://github.com/sheelachaudhary9828-maker/NER-LogiX-Intelligence-Platform.git
 echo ============================================================
 echo.
 
-set /p REPO_URL="Enter your GitHub Repository URL (e.g. https://github.com/username/ner-logix.git): "
+set PATH=%LOCALAPPDATA%\Programs\Git\cmd;%PATH%
 
-if "%REPO_URL%"=="" (
-    echo [ERROR] No repository URL provided. Exiting.
-    pause
-    exit /b 1
-)
-
-echo.
-echo Setting remote origin to: %REPO_URL%
 git remote remove origin 2>nul
-git remote add origin %REPO_URL%
+git remote add origin https://github.com/sheelachaudhary9828-maker/NER-LogiX-Intelligence-Platform.git
+
+echo Branch: main
+git branch -M main
 
 echo.
-echo Pushing branch 'main' to GitHub...
-git branch -M main
+echo Pushing code to GitHub...
+echo (If prompted, click "Sign in with your browser" or enter your GitHub Personal Access Token)
+echo.
+
 git push -u origin main
 
 if %ERRORLEVEL% equ 0 (
@@ -32,7 +30,8 @@ if %ERRORLEVEL% equ 0 (
     echo ============================================================
 ) else (
     echo.
-    echo [NOTE] If prompted for authentication, enter your GitHub Personal Access Token (PAT) as password.
+    echo [NOTE] Push requires GitHub authentication.
+    echo You can generate a Personal Access Token at https://github.com/settings/tokens
 )
 
 pause
