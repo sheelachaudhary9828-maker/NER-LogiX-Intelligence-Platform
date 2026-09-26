@@ -1,0 +1,18 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Embedded Python runtime (Windows portable)
+python_env/
+*.zip
+
+# Sensitive local credentials & environment variables
+.env
+.env.local
+
+# Operating System specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log

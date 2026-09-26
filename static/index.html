@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NER-LogiX | North Eastern Region Logistics & Accessibility Intelligence Platform</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  
+  <!-- Leaflet GIS CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  
+  <!-- Custom Application Styling -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Navigation & Brand Header -->
+  <header class="top-nav">
+    <div class="brand">
+      <div class="brand-logo">
+        <i class="fa-solid fa-mountain-sun"></i>
+      </div>
+      <div class="brand-title">
+        <h1 data-i18n="app_title">NER-LogiX Intelligence Platform</h1>
+        <p data-i18n="app_subtitle">AI-Powered Logistics & Accessibility Monitoring for North Eastern India</p>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <!-- Connectivity Status Badge -->
+      <div class="status-badge online" id="networkStatusBadge">
+        <span class="status-dot"></span>
+        <span id="networkStatusText" data-i18n="status_online">System Live</span>
+      </div>
+
+      <!-- State Filter Selector -->
+      <select id="stateFilterSelect" class="state-filter-select">
+        <option value="ALL" data-i18n="filter_all_states">All 8 NER States (Ashta Lakshmi)</option>
+        <option value="Assam">Assam</option>
+        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+        <option value="Meghalaya">Meghalaya</option>
+        <option value="Manipur">Manipur</option>
+        <option value="Mizoram">Mizoram</option>
+        <option value="Nagaland">Nagaland</option>
+        <option value="Tripura">Tripura</option>
+        <option value="Sikkim">Sikkim</option>
+      </select>
+
+      <!-- Multilingual Language Selector -->
+      <select id="languageSelect" class="lang-select">
+        <option value="en">English (EN)</option>
+        <option value="hi">हिंदी (Hindi)</option>
+        <option value="as">অসমীয়া (Assamese)</option>
+        <option value="bn">বাংলা (Bengali)</option>
+      </select>
+
+      <!-- Simulation Action Button -->
+      <button class="btn btn-outline btn-sm" id="btnSimulateWeather" title="Trigger monsoon cloudburst simulation to evaluate ML models">
+        <i class="fa-solid fa-cloud-showers-heavy"></i>
+        <span data-i18n="btn_simulate">Simulate Cloudburst</span>
+      </button>
+
+      <!-- Field Report Button -->
+      <button class="btn btn-primary" id="btnOpenReportModal">
+        <i class="fa-solid fa-camera"></i>
+        <span data-i18n="btn_report_incident">Field Incident Report</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Live Disruption & Weather Alert Ticker -->
+  <div class="ticker-bar">
+    <span class="ticker-label"><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="live_alerts">CRITICAL ALERTS</span></span>
+    <div class="ticker-content" id="alertTickerContent">
+      Loading regional logistics telemetry and disruption advisories...
+    </div>
+  </div>
+
+  <!-- Main Application Body -->
+  <main class="app-container">
+
+    <!-- KPI Summary Dashboard Cards -->
+    <section class="kpi-grid">
+      <div class="kpi-card emerald">
+        <div class="kpi-header">
+          <span class="kpi-title" data-i18n="kpi_connectivity">Regional Accessibility</span>
+          <span class="kpi-icon"><i class="fa-solid fa-chart-line text-emerald-400"></i></span>
+        </div>
+        <div class="kpi-value" id="kpiConnectivity">--%</div>
+        <div class="kpi-sub" id="kpiConnectivitySub">Monitoring 32 District Nodes</div>
+      </div>
+
+      <div class="kpi-card rose">
+        <div class="kpi-header">
+          <span class="kpi-title" data-i18n="kpi_blocked">Disrupted / Blocked Corridors</span>
+          <span class="kpi-icon"><i class="fa-solid fa-road-barrier text-rose-400"></i></span>
+        </div>
+        <div class="kpi-value text-rose-400" id="kpiBlocked">--</div>
+        <div class="kpi-sub" id="kpiBlockedSub">Active landslides / flooding</div>
+      </div>
+
+      <div class="kpi-card amber">
+        <div class="kpi-header">
+          <span class="kpi-title" data-i18n="kpi_caution">Caution / High Risk Routes</span>
+          <span class="kpi-icon"><i class="fa-solid fa-triangle-exclamation text-amber-400"></i></span>
+        </div>
+        <div class="kpi-value text-amber-400" id="kpiCaution">--</div>
+        <div class="kpi-sub" data-i18n="kpi_caution_sub">Single-lane / heavy rain slips</div>
+      </div>
+
+      <div class="kpi-card blue">
+        <div class="kpi-header">
+          <span class="kpi-title" data-i18n="kpi_fleet">Monitored Essential Fleet</span>
+          <span class="kpi-icon"><i class="fa-solid fa-truck-fast text-blue-400"></i></span>
+        </div>
+        <div class="kpi-value text-blue-400" id="kpiFleet">--</div>
+        <div class="kpi-sub" id="kpiFleetSub">GPS Connected Telemetry</div>
+      </div>
+
+      <div class="kpi-card purple">
+        <div class="kpi-header">
+          <span class="kpi-title" data-i18n="kpi_depots">Depots with Low Buffer (&lt;5d)</span>
+          <span class="kpi-icon"><i class="fa-solid fa-boxes-stacked text-purple-400"></i></span>
+        </div>
+        <div class="kpi-value text-purple-400" id="kpiDepots">--</div>
+        <div class="kpi-sub" data-i18n="kpi_depots_sub">Supply stock depletion watch</div>
+      </div>
+    </section>
+
+    <!-- Main Operational Workspace: GIS Map + Operational Sidebar -->
+    <section class="ops-grid">
+      
+      <!-- Interactive GIS Map Panel -->
+      <div class="map-panel">
+        <div class="panel-toolbar">
+          <div class="panel-title">
+            <i class="fa-solid fa-map-location-dot text-blue-400"></i>
+            <span data-i18n="map_title">NER GIS Logistics & Accessibility Command Map</span>
+          </div>
+
+          <!-- Layer Toggles -->
+          <div class="map-layer-toggles">
+            <button class="layer-btn active" id="toggleCorridorsBtn" data-i18n="layer_corridors">
+              <i class="fa-solid fa-route"></i> Road Corridors
+            </button>
+            <button class="layer-btn active" id="toggleVehiclesBtn" data-i18n="layer_vehicles">
+              <i class="fa-solid fa-truck"></i> Live GPS Fleet
+            </button>
+            <button class="layer-btn active" id="toggleIncidentsBtn" data-i18n="layer_incidents">
+              <i class="fa-solid fa-land-mine-on"></i> Disruption Points
+            </button>
+            <button class="layer-btn active" id="toggleDepotsBtn" data-i18n="layer_depots">
+              <i class="fa-solid fa-warehouse"></i> Depots & Helipads
+            </button>
+            <button class="layer-btn" id="btnCenterNER" title="Reset view to North East India">
+              <i class="fa-solid fa-crosshairs"></i> Reset View
+            </button>
+          </div>
+        </div>
+
+        <!-- The Leaflet Container -->
+        <div id="gisMap"></div>
+      </div>
+
+      <!-- Secondary Panel: AI Route Engine / GPS Fleet / Reports / Supply Chain -->
+      <div class="side-panel">
+        <nav class="tab-nav">
+          <button class="tab-btn active" data-tab="tab-route">
+            <i class="fa-solid fa-compass"></i> <span data-i18n="tab_route">AI Route Planner</span>
+          </button>
+          <button class="tab-btn" data-tab="tab-fleet">
+            <i class="fa-solid fa-truck-moving"></i> <span data-i18n="tab_fleet">GPS Fleet</span>
+          </button>
+          <button class="tab-btn" data-tab="tab-incidents">
+            <i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="tab_incidents">Incidents</span>
+          </button>
+          <button class="tab-btn" data-tab="tab-depots">
+            <i class="fa-solid fa-cubes"></i> <span data-i18n="tab_supply">Supply Depots</span>
+          </button>
+        </nav>
+
+        <!-- TAB 1: AI Route Planner -->
+        <div class="tab-content active" id="tab-route">
+          <form class="route-form" id="routePlannerForm">
+            <div class="form-group">
+              <label for="routeOrigin" data-i18n="lbl_origin"><i class="fa-solid fa-circle-dot text-emerald-400"></i> Origin Hub / District</label>
+              <select id="routeOrigin" class="form-select" required></select>
+            </div>
+
+            <div class="form-group">
+              <label for="routeDestination" data-i18n="lbl_destination"><i class="fa-solid fa-location-dot text-rose-400"></i> Destination Node</label>
+              <select id="routeDestination" class="form-select" required></select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+              <div class="form-group">
+                <label for="cargoTypeSelect" data-i18n="lbl_commodity">Cargo Classification</label>
+                <select id="cargoTypeSelect" class="form-select">
+                  <option value="Medicines">💊 Critical Medicines</option>
+                  <option value="Food">🌾 Food & PDS Grains</option>
+                  <option value="Fuel">⛽ Fuel & POL Tankers</option>
+                  <option value="Construction">🏗️ Construction Steel</option>
+                  <option value="Agri">🚜 Perishable Agri</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="vehicleWeightInput" data-i18n="lbl_weight">Gross Weight (Tonnes)</label>
+                <input type="number" id="vehicleWeightInput" class="form-input" value="18.0" min="1.0" max="60.0" step="0.5">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="justify-content: center; margin-top: 0.25rem;">
+              <i class="fa-solid fa-microchip"></i> <span data-i18n="btn_compute_routes">Compute AI Resilient Routes</span>
+            </button>
+          </form>
+
+          <!-- Route Comparison Results -->
+          <div class="route-results" id="routeResultsContainer">
+            <div style="text-align: center; color: var(--text-dim); padding: 2rem 0; font-size: 0.85rem;">
+              <i class="fa-solid fa-route" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.4;"></i>
+              <p>Select origin and destination to calculate AI-optimized disruption bypass routes with travel delay estimation.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: Real-Time GPS Fleet Tracking -->
+        <div class="tab-content" id="tab-fleet">
+          <div class="fleet-controls">
+            <button class="filter-chip active" data-fleet-filter="ALL">All (<span id="fleetCountAll">0</span>)</button>
+            <button class="filter-chip" data-fleet-filter="Medicines">💊 Meds</button>
+            <button class="filter-chip" data-fleet-filter="Food">🌾 Food</button>
+            <button class="filter-chip" data-fleet-filter="Fuel">⛽ Fuel</button>
+            <button class="filter-chip" data-fleet-filter="Construction">🏗️ Infra</button>
+          </div>
+
+          <div id="fleetListContainer">
+            <!-- Dynamic Vehicle cards -->
+          </div>
+        </div>
+
+        <!-- TAB 3: Field Incidents & Road Hazard Feed -->
+        <div class="tab-content" id="tab-incidents">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">Verified Field Reports</span>
+            <button class="btn btn-primary btn-sm" id="btnQuickReport">
+              <i class="fa-solid fa-plus"></i> New Report
+            </button>
+          </div>
+          <div id="incidentsListContainer">
+            <!-- Dynamic Incident items -->
+          </div>
+        </div>
+
+        <!-- TAB 4: District Supply Depots & Buffer Depletion -->
+        <div class="tab-content" id="tab-depots">
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            District Warehouses & Essential Buffer Stocks (Days Remaining)
+          </div>
+          <div id="depotsListContainer">
+            <!-- Dynamic Depot Items -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Regional Connectivity Status Matrix by State -->
+    <section class="matrix-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <div>
+          <h3 style="font-size: 1rem; font-weight: 700;" data-i18n="matrix_title">North Eastern States Connectivity & Disruption Matrix</h3>
+          <p style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="matrix_sub">Live monitoring across Assam, Arunachal Pradesh, Meghalaya, Manipur, Mizoram, Nagaland, Tripura, and Sikkim</p>
+        </div>
+        <button class="btn btn-outline btn-sm" id="btnRefreshMatrix">
+          <i class="fa-solid fa-arrows-rotate"></i> Refresh Matrix
+        </button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table-custom">
+          <thead>
+            <tr>
+              <th data-i18n="th_state">State</th>
+              <th data-i18n="th_districts">Monitored Hubs</th>
+              <th data-i18n="th_connectivity">Connectivity Index</th>
+              <th data-i18n="th_status">Network Status</th>
+              <th data-i18n="th_vulnerability">Topography & Dominant Vulnerability</th>
+              <th data-i18n="th_action">Active Logistics Protocol</th>
+            </tr>
+          </thead>
+          <tbody id="stateMatrixTbody">
+            <!-- Populated dynamically via app.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Field Official / Citizen Incident Reporting Modal -->
+  <div class="modal-overlay" id="reportModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3><i class="fa-solid fa-triangle-exclamation text-rose-500"></i> <span data-i18n="modal_report_title">Field Incident & Disruption Report</span></h3>
+        <button class="close-modal-btn" id="btnCloseModal">&times;</button>
+      </div>
+
+      <form class="modal-body" id="incidentReportForm">
+        <div class="form-group">
+          <label data-i18n="modal_lbl_title">Disruption Title / Headline</label>
+          <input type="text" id="incTitleInput" class="form-input" placeholder="e.g. Major rockfall blocking NH-29 near Paglapahar" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+          <div class="form-group">
+            <label data-i18n="modal_lbl_type">Incident Classification</label>
+            <select id="incTypeSelect" class="form-select">
+              <option value="Landslide">⛰️ Landslide / Rockfall</option>
+              <option value="Mudflow">🌧️ Mudflow / Slurry</option>
+              <option value="River Inundation">🌊 River Inundation / Flooding</option>
+              <option value="Bridge Damage">🌉 Bridge Damage / Weak Abutment</option>
+              <option value="Road Sinking">🕳️ Road Sinking / Subsidence</option>
+              <option value="Tree Fall">🌲 Uprooted Trees / Debris</option>
+              <option value="Snow Blockage">❄️ Heavy Snow Slush / Freezing</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label data-i18n="modal_lbl_severity">Severity Level</label>
+            <select id="incSeveritySelect" class="form-select">
+              <option value="CRITICAL">🔴 CRITICAL (Total Road Cutoff)</option>
+              <option value="HIGH">🟡 HIGH (Single-Lane / Heavy Delay)</option>
+              <option value="MEDIUM">🔵 MEDIUM (Caution / Passable)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="modal_lbl_corridor">Affected Road Corridor</label>
+          <select id="incCorridorSelect" class="form-select"></select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+          <div class="form-group">
+            <label data-i18n="modal_lbl_state">State</label>
+            <select id="incStateSelect" class="form-select">
+              <option value="Assam">Assam</option>
+              <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+              <option value="Meghalaya">Meghalaya</option>
+              <option value="Manipur">Manipur</option>
+              <option value="Mizoram">Mizoram</option>
+              <option value="Nagaland">Nagaland</option>
+              <option value="Tripura">Tripura</option>
+              <option value="Sikkim">Sikkim</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label data-i18n="modal_lbl_district">District / Location</label>
+            <input type="text" id="incDistrictInput" class="form-input" placeholder="e.g. Dimapur / Kohima Border" required>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; align-items: flex-end;">
+          <div class="form-group">
+            <label data-i18n="modal_lbl_lat">Latitude</label>
+            <input type="number" id="incLatInput" class="form-input" step="0.0001" value="25.8210" required>
+          </div>
+          <div class="form-group">
+            <label data-i18n="modal_lbl_lng">Longitude</label>
+            <input type="number" id="incLngInput" class="form-input" step="0.0001" value="93.8100" required>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" id="btnGrabGPS" title="Auto-detect GPS coordinates">
+            <i class="fa-solid fa-location-crosshairs"></i> Auto-GPS
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="modal_lbl_desc">Detailed Observations & Estimated Clearance Time</label>
+          <textarea id="incDescInput" class="form-input" rows="3" placeholder="Describe extent of blockage, number of stranded vehicles, presence of BRO/PWD machinery..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="modal_lbl_photo"><i class="fa-solid fa-camera"></i> Geo-Tagged Site Photograph (File Upload / Camera)</label>
+          <input type="file" id="incPhotoFile" class="form-input" accept="image/*">
+          <div id="photoPreviewContainer" style="display: none; margin-top: 0.5rem;">
+            <img id="photoPreviewImg" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color);">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+          <div class="form-group">
+            <label data-i18n="modal_lbl_name">Reporter Name</label>
+            <input type="text" id="incReporterName" class="form-input" value="Er. N. Sengupta" required>
+          </div>
+          <div class="form-group">
+            <label data-i18n="modal_lbl_role">Official Designation / Role</label>
+            <input type="text" id="incReporterRole" class="form-input" value="PWD Sub-Divisional Officer" required>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem;">
+          <button type="button" class="btn btn-outline" id="btnCancelReport" data-i18n="btn_cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSubmitReport">
+            <i class="fa-solid fa-paper-plane"></i> <span data-i18n="btn_submit_report">Submit & Sync Incident</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Offline Data Sync Notification Toast -->
+  <div class="sync-toast" id="syncToast">
+    <i class="fa-solid fa-cloud-arrow-up text-blue-400"></i>
+    <span id="syncToastMsg">Synchronizing offline field reports to central database...</span>
+  </div>
+
+  <!-- Leaflet GIS JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- Main Application Logic & Multilingual Engine -->
+  <script src="app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "NER-LogiX: North Eastern Logistics Intelligence Platform",
+  "short_name": "NER-LogiX",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0a0e17",
+  "theme_color": "#2563eb",
+  "description": "AI-Powered Logistics Accessibility & Disruption Intelligence Platform for the North Eastern Region",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
